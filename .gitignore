@@ -2,3 +2,4 @@
 .env
 *Future_version.txt
 *venv/
+*emails.csv
