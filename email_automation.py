@@ -68,7 +68,9 @@ def save_tasks(tasks):
         json.dump(tasks, f, indent=4)
 
 def is_valid_email(email):
-    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+    # Robust regex pattern for email validation
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    return re.match(pattern, email) is not None
 
 def send_email(recipient_email, subject, message, attachments=None):
     if not SENDER_EMAIL or not SENDER_PASSWORD:
@@ -126,6 +128,7 @@ def email_task(task_name, email_list_path, message_path, subject, attachments):
 
             if not is_valid_email(email):
                 invalid_emails.append(email)
+                logging.warning(f"Invalid email format: {email}")
                 continue
 
             message = message_template.replace("{name}", name)
@@ -220,7 +223,6 @@ elif args.list:
 elif args.remove:
     remove_task(args.remove)
 
-
 def load_and_schedule_tasks():
     tasks = load_tasks()
     for task_name, details in tasks.items():
@@ -237,8 +239,10 @@ def load_and_schedule_tasks():
             ],
             id=task_name,
         )
+
 # Load and schedule tasks before parsing commands
 load_and_schedule_tasks()
+
 def start_scheduler():
     """Runs the scheduler in a separate thread."""
     scheduler.start()
@@ -261,4 +265,3 @@ if not (args.add or args.list or args.remove):
     except KeyboardInterrupt:
         print("🛑 Scheduler stopped.")
         scheduler.shutdown()
-
